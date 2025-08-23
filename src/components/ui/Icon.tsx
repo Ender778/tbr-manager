@@ -1,153 +1,169 @@
-import React from 'react'
-import { cn } from '@/lib/utils'
+import * as React from "react"
 import { 
-  Library, 
   BookOpen, 
+  Library, 
   Plus, 
   Search, 
-  Settings,
-  Menu,
-  X,
-  Home,
-  User,
-  Star,
-  Heart,
-  Eye,
-  EyeOff,
-  Calendar,
-  Clock,
-  Tag,
-  Filter,
-  Sort,
-  Grid,
-  List,
-  ChevronLeft,
-  ChevronRight,
-  ChevronUp,
-  ChevronDown,
-  ArrowUp,
-  ArrowDown,
-  ArrowLeft,
-  ArrowRight
-} from 'lucide-react'
+  Settings, 
+  Menu, 
+  X 
+} from "lucide-react"
+import { cn } from "@/lib/utils"
 
-// Icon size variants for consistent scaling
-export type IconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
-
-// All available icon names from lucide-react
-export type IconName = 
-  | 'library' 
-  | 'book-open'
-  | 'plus' 
-  | 'search' 
-  | 'settings'
-  | 'menu'
-  | 'x'
-  | 'home'
-  | 'user'
-  | 'star'
-  | 'heart' 
-  | 'eye'
-  | 'eye-off'
-  | 'calendar'
-  | 'clock'
-  | 'tag'
-  | 'filter'
-  | 'sort'
-  | 'grid'
-  | 'list'
-  | 'chevron-left'
-  | 'chevron-right'
-  | 'chevron-up'
-  | 'chevron-down'
-  | 'arrow-up'
-  | 'arrow-down'
-  | 'arrow-left'
-  | 'arrow-right'
-
-interface IconProps {
-  name: IconName
-  size?: IconSize
+export interface IconProps {
+  size?: "xs" | "sm" | "md" | "lg" | "xl"
   className?: string
-  'aria-label'?: string
+  "aria-label"?: string
+  decorative?: boolean
 }
 
 const iconSizes = {
-  xs: 'h-3 w-3',
-  sm: 'h-4 w-4', 
-  md: 'h-5 w-5',
-  lg: 'h-6 w-6',
-  xl: 'h-8 w-8'
+  xs: "h-3 w-3",
+  sm: "h-4 w-4", 
+  md: "h-5 w-5",
+  lg: "h-6 w-6",
+  xl: "h-8 w-8",
 }
 
-// Icon mapping for centralized icon management
-const iconMap = {
-  'library': Library,
-  'book-open': BookOpen,
-  'plus': Plus,
-  'search': Search,
-  'settings': Settings,
-  'menu': Menu,
-  'x': X,
-  'home': Home,
-  'user': User,
-  'star': Star,
-  'heart': Heart,
-  'eye': Eye,
-  'eye-off': EyeOff,
-  'calendar': Calendar,
-  'clock': Clock,
-  'tag': Tag,
-  'filter': Filter,
-  'sort': Sort,
-  'grid': Grid,
-  'list': List,
-  'chevron-left': ChevronLeft,
-  'chevron-right': ChevronRight,
-  'chevron-up': ChevronUp,
-  'chevron-down': ChevronDown,
-  'arrow-up': ArrowUp,
-  'arrow-down': ArrowDown,
-  'arrow-left': ArrowLeft,
-  'arrow-right': ArrowRight,
-} as const
-
-export const Icon: React.FC<IconProps> = ({ 
-  name, 
-  size = 'md', 
-  className, 
-  'aria-label': ariaLabel,
-  ...props 
-}) => {
-  const IconComponent = iconMap[name]
-  
-  if (!IconComponent) {
-    console.warn(`Icon "${name}" not found. Available icons: ${Object.keys(iconMap).join(', ')}`)
-    return null
-  }
-
-  return (
-    <IconComponent
+// Library/Book icon
+export const LibraryIcon = React.forwardRef<SVGSVGElement, IconProps>(
+  ({ size = "md", className, "aria-label": ariaLabel, decorative, ...props }, ref) => (
+    <Library
+      ref={ref}
       className={cn(iconSizes[size], className)}
-      aria-label={ariaLabel}
-      role={ariaLabel ? 'img' : undefined}
+      aria-label={decorative ? undefined : ariaLabel}
+      aria-hidden={decorative}
+      role={decorative ? "presentation" : "img"}
       {...props}
     />
   )
+)
+LibraryIcon.displayName = "LibraryIcon"
+
+// Book Open icon
+export const BookOpenIcon = React.forwardRef<SVGSVGElement, IconProps>(
+  ({ size = "md", className, "aria-label": ariaLabel, decorative, ...props }, ref) => (
+    <BookOpen
+      ref={ref}
+      className={cn(iconSizes[size], className)}
+      aria-label={decorative ? undefined : ariaLabel}
+      aria-hidden={decorative}
+      role={decorative ? "presentation" : "img"}
+      {...props}
+    />
+  )
+)
+BookOpenIcon.displayName = "BookOpenIcon"
+
+// Plus icon
+export const PlusIcon = React.forwardRef<SVGSVGElement, IconProps>(
+  ({ size = "md", className, "aria-label": ariaLabel, decorative, ...props }, ref) => (
+    <Plus
+      ref={ref}
+      className={cn(iconSizes[size], className)}
+      aria-label={decorative ? undefined : ariaLabel}
+      aria-hidden={decorative}
+      role={decorative ? "presentation" : "img"}
+      {...props}
+    />
+  )
+)
+PlusIcon.displayName = "PlusIcon"
+
+// Search icon
+export const SearchIcon = React.forwardRef<SVGSVGElement, IconProps>(
+  ({ size = "md", className, "aria-label": ariaLabel, decorative, ...props }, ref) => (
+    <Search
+      ref={ref}
+      className={cn(iconSizes[size], className)}
+      aria-label={decorative ? undefined : ariaLabel}
+      aria-hidden={decorative}
+      role={decorative ? "presentation" : "img"}
+      {...props}
+    />
+  )
+)
+SearchIcon.displayName = "SearchIcon"
+
+// Settings icon
+export const SettingsIcon = React.forwardRef<SVGSVGElement, IconProps>(
+  ({ size = "md", className, "aria-label": ariaLabel, decorative, ...props }, ref) => (
+    <Settings
+      ref={ref}
+      className={cn(iconSizes[size], className)}
+      aria-label={decorative ? undefined : ariaLabel}
+      aria-hidden={decorative}
+      role={decorative ? "presentation" : "img"}
+      {...props}
+    />
+  )
+)
+SettingsIcon.displayName = "SettingsIcon"
+
+// Menu icon
+export const MenuIcon = React.forwardRef<SVGSVGElement, IconProps>(
+  ({ size = "md", className, "aria-label": ariaLabel, decorative, ...props }, ref) => (
+    <Menu
+      ref={ref}
+      className={cn(iconSizes[size], className)}
+      aria-label={decorative ? undefined : ariaLabel}
+      aria-hidden={decorative}
+      role={decorative ? "presentation" : "img"}
+      {...props}
+    />
+  )
+)
+MenuIcon.displayName = "MenuIcon"
+
+// Close icon
+export const CloseIcon = React.forwardRef<SVGSVGElement, IconProps>(
+  ({ size = "md", className, "aria-label": ariaLabel, decorative, ...props }, ref) => (
+    <X
+      ref={ref}
+      className={cn(iconSizes[size], className)}
+      aria-label={decorative ? undefined : ariaLabel}
+      aria-hidden={decorative}
+      role={decorative ? "presentation" : "img"}
+      {...props}
+    />
+  )
+)
+CloseIcon.displayName = "CloseIcon"
+
+// Generic Icon component for any Lucide icon
+interface GenericIconProps extends IconProps {
+  name: keyof typeof iconMap
 }
 
-// Convenience components for frequently used icons
-export const LibraryIcon = (props: Omit<IconProps, 'name'>) => 
-  <Icon name="library" {...props} />
+const iconMap = {
+  library: Library,
+  "book-open": BookOpen,
+  plus: Plus,
+  search: Search,
+  settings: Settings,
+  menu: Menu,
+  close: X,
+} as const
 
-export const BookOpenIcon = (props: Omit<IconProps, 'name'>) => 
-  <Icon name="book-open" {...props} />
+export const Icon = React.forwardRef<SVGSVGElement, GenericIconProps>(
+  ({ name, size = "md", className, "aria-label": ariaLabel, decorative, ...props }, ref) => {
+    const IconComponent = iconMap[name]
+    
+    if (!IconComponent) {
+      console.warn(`Icon "${name}" not found in icon map`)
+      return null
+    }
 
-export const PlusIcon = (props: Omit<IconProps, 'name'>) => 
-  <Icon name="plus" {...props} />
-
-export const SearchIcon = (props: Omit<IconProps, 'name'>) => 
-  <Icon name="search" {...props} />
-
-export const SettingsIcon = (props: Omit<IconProps, 'name'>) => 
-  <Icon name="settings" {...props} />
+    return (
+      <IconComponent
+        ref={ref}
+        className={cn(iconSizes[size], className)}
+        aria-label={decorative ? undefined : ariaLabel}
+        aria-hidden={decorative}
+        role={decorative ? "presentation" : "img"}
+        {...props}
+      />
+    )
+  }
+)
+Icon.displayName = "Icon"

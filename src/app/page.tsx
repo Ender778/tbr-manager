@@ -3,7 +3,7 @@ import { PageLayout, Container, Section, Grid, Flex } from "@/components/ui/layo
 import { Heading1, Heading2, Heading3, Text, Lead } from "@/components/ui/Typography"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent, FeatureCard } from "@/components/ui/Card"
-import { LibraryIcon, BookOpenIcon, PlusIcon, SearchIcon } from "@/components/ui/icons"
+import { LibraryIcon, BookOpenIcon, PlusIcon, SearchIcon } from "@/components/ui/Icon"
 
 export default function HomePage() {
   return (

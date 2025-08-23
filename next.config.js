@@ -11,14 +11,6 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ['@dnd-kit/core', '@dnd-kit/sortable', 'lucide-react'],
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
-      },
-    },
   },
   webpack: (config) => {
     config.resolve.fallback = {

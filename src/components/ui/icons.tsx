@@ -1,3 +1,22 @@
+/**
+ * @deprecated This custom SVG icon system is deprecated in favor of the Lucide React icons.
+ * Use the Icon component from './Icon.tsx' instead for better performance, accessibility, and consistency.
+ * 
+ * Migration guide:
+ * - Replace imports: from "@/components/ui/icons" -> from "@/components/ui/Icon"
+ * - The API remains the same: <LibraryIcon size="md" />
+ * - Lucide icons have better accessibility and consistent sizing
+ */
+
+/**
+ * @deprecated This file is deprecated. Use @/components/ui/Icon instead.
+ * The new Icon system uses Lucide React icons with proper sizing and accessibility.
+ * 
+ * Migration guide:
+ * - Replace import from "@/components/ui/icons" with "@/components/ui/Icon"
+ * - All icon components work the same way with improved sizing
+ */
+
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
@@ -6,10 +25,10 @@ export interface IconProps extends React.SVGProps<SVGSVGElement> {
 }
 
 const iconSizes = {
-  sm: "h-4 w-4",
-  md: "h-5 w-5",
-  lg: "h-6 w-6",
-  xl: "h-8 w-8",
+  sm: "h-3 w-3",
+  md: "h-4 w-4",
+  lg: "h-5 w-5",
+  xl: "h-6 w-6",
 }
 
 // Base icon wrapper component
@@ -18,6 +37,8 @@ const Icon = React.forwardRef<SVGSVGElement, IconProps>(
     <svg
       ref={ref}
       className={cn(iconSizes[size], className)}
+      width="24"
+      height="24"
       fill="none"
       stroke="currentColor"
       strokeWidth={2}

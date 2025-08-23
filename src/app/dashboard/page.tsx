@@ -2,7 +2,7 @@ import { PageLayout, Container, Section, Grid, Flex } from "@/components/ui/layo
 import { Heading1, Heading2, Lead, Text } from "@/components/ui/Typography"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent } from "@/components/ui/Card"
-import { LibraryIcon, PlusIcon, SearchIcon, SettingsIcon } from "@/components/ui/icons"
+import { LibraryIcon, PlusIcon, SearchIcon, SettingsIcon } from "@/components/ui/Icon"
 
 export default function DashboardPage() {
   return (
