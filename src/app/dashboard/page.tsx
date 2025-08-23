@@ -1,76 +1,96 @@
-import { Library, Plus, Search, Settings } from 'lucide-react'
+import { PageLayout, Container, Section, Grid, Flex } from "@/components/ui/layout"
+import { Heading1, Heading2, Lead, Text } from "@/components/ui/typography"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { LibraryIcon, PlusIcon, SearchIcon, SettingsIcon } from "@/components/ui/icons"
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-cork-50">
+    <PageLayout>
       {/* Header */}
-      <header className="border-b border-cork-200 bg-white">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Library className="h-8 w-8 text-cork-600" />
-            <h1 className="text-2xl font-bold text-cork-800">TBR Manager</h1>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <button className="inline-flex items-center gap-2 bg-cork-600 text-white px-4 py-2 rounded-lg hover:bg-cork-700 transition-colors">
-              <Plus className="h-4 w-4" />
-              Add Book
-            </button>
-            <button className="p-2 text-cork-600 hover:bg-cork-100 rounded-lg transition-colors">
-              <Search className="h-5 w-5" />
-            </button>
-            <button className="p-2 text-cork-600 hover:bg-cork-100 rounded-lg transition-colors">
-              <Settings className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
+      <header className="border-b border-amber-200 bg-white/80 backdrop-blur-sm">
+        <Container>
+          <Flex justify="between" align="center" className="h-16">
+            <Flex align="center" gap="sm">
+              <LibraryIcon size="lg" className="text-amber-600" />
+              <Heading2 className="!text-2xl">TBR Manager</Heading2>
+            </Flex>
+            
+            <Flex gap="sm">
+              <Button variant="primary" size="md">
+                <PlusIcon size="sm" />
+                Add Book
+              </Button>
+              <Button variant="ghost" size="icon">
+                <SearchIcon size="md" />
+              </Button>
+              <Button variant="ghost" size="icon">
+                <SettingsIcon size="md" />
+              </Button>
+            </Flex>
+          </Flex>
+        </Container>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-cork-800 mb-2">Your Reading Collection</h2>
-          <p className="text-cork-600">
-            Organize your books visually with drag-and-drop on your personal cork board
-          </p>
-        </div>
+      <main>
+        <Container>
+          <Section spacing="lg">
+            <div className="mb-8">
+              <Heading1 className="mb-2">Your Reading Collection</Heading1>
+              <Lead>
+                Organize your books visually with drag-and-drop on your personal cork board
+              </Lead>
+            </div>
 
-        {/* Cork Board Preview */}
-        <div className="cork-board min-h-[600px] rounded-xl border-2 border-cork-200 p-8">
-          <div className="text-center text-cork-500 mt-32">
-            <Library className="h-16 w-16 mx-auto mb-4 opacity-50" />
-            <h3 className="text-xl font-semibold mb-2">Your Cork Board Awaits</h3>
-            <p className="mb-6 max-w-md mx-auto">
-              Add your first book to get started. Your books will appear here as visual covers
-              that you can drag and organize however you like.
-            </p>
-            <button className="inline-flex items-center gap-2 bg-cork-600 text-white px-6 py-3 rounded-lg hover:bg-cork-700 transition-colors font-semibold">
-              <Plus className="h-5 w-5" />
-              Add Your First Book
-            </button>
-          </div>
-        </div>
+            {/* Cork Board Area */}
+            <Card variant="cork-board" className="min-h-[600px] p-8 cork-board">
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <LibraryIcon size="xl" className="text-amber-500 opacity-50 mb-4" />
+                <Heading2 className="mb-2">Your Cork Board Awaits</Heading2>
+                <Text className="mb-6 max-w-md">
+                  Add your first book to get started. Your books will appear here as visual covers
+                  that you can drag and organize however you like.
+                </Text>
+                <Button variant="primary" size="lg">
+                  <PlusIcon size="md" />
+                  Add Your First Book
+                </Button>
+              </div>
+            </Card>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
-          <div className="bg-white rounded-lg p-6 border border-cork-200">
-            <div className="text-2xl font-bold text-cork-800">0</div>
-            <div className="text-cork-600">Total Books</div>
-          </div>
-          <div className="bg-white rounded-lg p-6 border border-cork-200">
-            <div className="text-2xl font-bold text-cork-800">0</div>
-            <div className="text-cork-600">To Be Read</div>
-          </div>
-          <div className="bg-white rounded-lg p-6 border border-cork-200">
-            <div className="text-2xl font-bold text-cork-800">0</div>
-            <div className="text-cork-600">Currently Reading</div>
-          </div>
-          <div className="bg-white rounded-lg p-6 border border-cork-200">
-            <div className="text-2xl font-bold text-cork-800">0</div>
-            <div className="text-cork-600">Completed</div>
-          </div>
-        </div>
+            {/* Stats Section */}
+            <Section spacing="sm">
+              <Grid cols={4} gap="md">
+                <Card>
+                  <CardContent className="p-6">
+                    <Text className="text-2xl font-bold text-amber-800">0</Text>
+                    <Text color="muted">Total Books</Text>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6">
+                    <Text className="text-2xl font-bold text-amber-800">0</Text>
+                    <Text color="muted">To Be Read</Text>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6">
+                    <Text className="text-2xl font-bold text-amber-800">0</Text>
+                    <Text color="muted">Currently Reading</Text>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6">
+                    <Text className="text-2xl font-bold text-amber-800">0</Text>
+                    <Text color="muted">Completed</Text>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Section>
+          </Section>
+        </Container>
       </main>
-    </div>
+    </PageLayout>
   )
 }

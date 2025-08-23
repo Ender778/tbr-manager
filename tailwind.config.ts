@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss'
+import { tailwindThemeExtension } from './src/lib/design-tokens'
 
 const config: Config = {
   content: [
@@ -7,8 +8,12 @@ const config: Config = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
+    ...tailwindThemeExtension,
     extend: {
+      ...tailwindThemeExtension.extend,
+      // Preserve existing Radix UI color system
       colors: {
+        ...tailwindThemeExtension.extend.colors,
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -42,43 +47,16 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        'cork': {
-          50: '#fdf8f3',
-          100: '#faf0e4',
-          200: '#f3ddc4',
-          300: '#ecc399',
-          400: '#e3a06d',
-          500: '#dc8349',
-          600: '#ce6c3e',
-          700: '#ab5536',
-          800: '#884632',
-          900: '#6f3a2b',
-        },
-        // Add explicit amber colors for compatibility
-        'amber': {
-          50: '#fffbeb',
-          100: '#fef3c7',
-          200: '#fde68a',
-          300: '#fcd34d',
-          400: '#fbbf24',
-          500: '#f59e0b',
-          600: '#d97706',
-          700: '#b45309',
-          800: '#92400e',
-          900: '#78350f',
-        }
       },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-      },
+      // Enhanced animations for modern interactions
       animation: {
+        ...tailwindThemeExtension.extend.transitionDuration,
         'push-pin': 'push-pin 0.2s ease-out',
         'book-hover': 'book-hover 0.2s ease-out',
+        'fade-in': 'fade-in 0.2s ease-out',
+        'scale-in': 'scale-in 0.15s ease-out',
+        'slide-up': 'slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        'shimmer': 'shimmer 1.5s infinite',
       },
       keyframes: {
         'push-pin': {
@@ -90,10 +68,38 @@ const config: Config = {
           '0%': { transform: 'translateY(0px) rotate(var(--rotation))' },
           '100%': { transform: 'translateY(-4px) rotate(0deg)' },
         },
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        'scale-in': {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        'slide-up': {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'shimmer': {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
+      },
+      // Container queries for modern responsive design
+      containers: {
+        xs: '20rem',
+        sm: '24rem',
+        md: '28rem',
+        lg: '32rem',
+        xl: '36rem',
+        '2xl': '42rem',
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // Enable container queries when available
+    // require('@tailwindcss/container-queries'),
+  ],
 }
 
 export default config
