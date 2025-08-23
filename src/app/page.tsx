@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { PageLayout, Container, Section, Grid, Flex } from "@/components/ui/layout"
-import { Heading1, Heading2, Heading3, Text, Lead } from "@/components/ui/typography"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, FeatureCard } from "@/components/ui/card"
+import { Heading1, Heading2, Heading3, Text, Lead } from "@/components/ui/Typography"
+import { Button } from "@/components/ui/Button"
+import { Card, CardContent, FeatureCard } from "@/components/ui/Card"
 import { LibraryIcon, BookOpenIcon, PlusIcon, SearchIcon } from "@/components/ui/icons"
 
 export default function HomePage() {
