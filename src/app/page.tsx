@@ -91,8 +91,9 @@ export default function HomePage() {
                 {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
-                    className="aspect-[2/3] bg-gradient-to-br from-amber-200 to-amber-300 rounded-lg shadow-md transform rotate-1 hover:rotate-0 transition-transform cursor-pointer"
-                    style={{ transform: `rotate(${Math.random() * 6 - 3}deg)` }}
+                    className={`aspect-[2/3] bg-gradient-to-br from-amber-200 to-amber-300 rounded-lg shadow-md hover:rotate-0 transition-transform cursor-pointer ${
+                      i === 1 ? 'rotate-1' : i === 2 ? '-rotate-2' : i === 3 ? 'rotate-3' : '-rotate-1'
+                    }`}
                   >
                     <div className="w-full h-full rounded-lg bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center relative">
                       <BookOpenIcon size="lg" className="text-white" />

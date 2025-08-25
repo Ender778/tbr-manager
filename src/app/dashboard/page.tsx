@@ -1,10 +1,41 @@
+'use client'
+
+import React, { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { PageLayout, Container, Section, Grid, Flex } from "@/components/ui/layout"
 import { Heading1, Heading2, Lead, Text } from "@/components/ui/Typography"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent } from "@/components/ui/Card"
 import { LibraryIcon, PlusIcon, SearchIcon, SettingsIcon } from "@/components/ui/Icon"
+import { useAuthStore } from '@/stores/auth-store'
+import { UserAvatar } from '@/components/auth/UserProfile'
 
 export default function DashboardPage() {
+  const router = useRouter()
+  const { user, isInitialized, initialize, signOut } = useAuthStore()
+
+  useEffect(() => {
+    initialize()
+  }, [initialize])
+
+  useEffect(() => {
+    if (isInitialized && !user) {
+      router.push('/auth')
+    }
+  }, [isInitialized, user, router])
+
+  if (!isInitialized || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-cork-600 border-t-transparent" />
+      </div>
+    )
+  }
+
+  const handleSignOut = async () => {
+    await signOut()
+    router.push('/auth')
+  }
   return (
     <PageLayout>
       {/* Header */}
@@ -16,7 +47,7 @@ export default function DashboardPage() {
               <Heading2 className="!text-2xl">TBR Manager</Heading2>
             </Flex>
             
-            <Flex gap="sm">
+            <Flex gap="sm" align="center">
               <Button variant="primary" size="md">
                 <PlusIcon size="sm" />
                 Add Book
@@ -24,8 +55,14 @@ export default function DashboardPage() {
               <Button variant="ghost" size="icon">
                 <SearchIcon size="md" />
               </Button>
-              <Button variant="ghost" size="icon">
-                <SettingsIcon size="md" />
+              <UserAvatar size="md" />
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={handleSignOut}
+                className="text-cork-600 hover:text-cork-800"
+              >
+                Sign Out
               </Button>
             </Flex>
           </Flex>
