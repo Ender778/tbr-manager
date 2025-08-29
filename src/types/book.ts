@@ -1,88 +1,31 @@
 export type BookStatus = 'tbr' | 'reading' | 'completed' | 'dnf' | 'archived'
 
-export interface Book {
-  id: string
-  isbn?: string
-  title: string
-  subtitle?: string
-  author: string
-  publisher?: string
-  publishedDate?: string
-  pageCount?: number
-  language?: string
-  coverUrl?: string
-  coverThumbnailUrl?: string
-  googleBooksId?: string
-  openLibraryId?: string
-  goodreadsId?: string
-  status: BookStatus
-  rating?: number
-  personalNotes?: string
-  dateAdded: string
-  dateStarted?: string
-  dateCompleted?: string
-  userId: string
-  createdAt: string
-  updatedAt: string
-}
+// Import from database types for consistency
+import type { Book as DatabaseBook, Shelf as DatabaseShelf, BookPosition as DatabaseBookPosition } from './database.types'
+
+// Use database types directly to ensure consistency
+export type Book = DatabaseBook
+export type Shelf = DatabaseShelf
+export type BookPosition = DatabaseBookPosition
 
 export interface BookSearchResult {
-  id: string
+  googleBooksId: string
+  isbn?: string | undefined
   title: string
-  subtitle?: string
+  subtitle?: string | undefined
+  author: string
   authors: string[]
-  publisher?: string
-  publishedDate?: string
-  description?: string
-  pageCount?: number
-  categories?: string[]
-  imageLinks?: {
-    thumbnail?: string
-    small?: string
-    medium?: string
-    large?: string
-  }
-  isbn10?: string
-  isbn13?: string
-  language?: string
-  googleBooksId?: string
+  publisher?: string | undefined
+  publishedDate?: Date | undefined
+  pageCount?: number | undefined
+  language?: string | undefined
+  description?: string | undefined
+  categories?: string[] | undefined
+  coverUrl?: string | undefined
+  thumbnailUrl?: string | undefined
 }
 
-export interface Shelf {
-  id: string
-  name: string
-  description?: string
-  position: number
-  color: string
-  icon: string
-  isDefault: boolean
-  isArchived: boolean
-  userId: string
-  createdAt: string
-  updatedAt: string
-}
 
-export interface BookPosition {
-  id: string
-  bookId: string
-  shelfId: string
-  position: number
-  masterPosition?: number
-  yearCompleted?: number
-  userId: string
-  createdAt: string
-  updatedAt: string
-}
 
-export interface UserPreferences {
-  userId: string
-  defaultView: 'cork_board' | 'list' | 'shelf' | 'timeline' | 'master'
-  corkBoardColumns: number
-  booksPerPage: number
-  theme: 'light' | 'dark' | 'auto'
-  showCovers: boolean
-  showRatings: boolean
-  autoFetchCovers: boolean
-  createdAt: string
-  updatedAt: string
-}
+// Import UserPreferences from database types
+export type UserPreferences = import('./database.types').UserPreferences

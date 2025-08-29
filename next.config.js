@@ -39,13 +39,19 @@ const securityHeaders = [
 
 const nextConfig = {
   images: {
-    domains: ['covers.openlibrary.org', 'books.google.com', 'images-na.ssl-images-amazon.com'],
+    domains: [
+      'covers.openlibrary.org', 
+      'books.google.com', 
+      'books.googleusercontent.com',
+      'images-na.ssl-images-amazon.com'
+    ],
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    dangerouslyAllowSVG: true,
+    dangerouslyAllowSVG: false, // More secure for book covers
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    minimumCacheTTL: 60 * 60 * 24 * 7, // Cache book covers for 1 week
   },
   experimental: {
     optimizePackageImports: ['@dnd-kit/core', '@dnd-kit/sortable', 'lucide-react'],
