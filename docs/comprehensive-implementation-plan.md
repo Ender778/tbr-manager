@@ -785,12 +785,54 @@ export async function suggestShelfOrganization(books: Book[]): Promise<ShelfSugg
     },
     // Generate more intelligent suggestions based on user patterns
   ]
-  
-  return suggestions
+
+      <div className="mt-8 p-4 bg-cork-50 rounded-lg">
+        <h4 className="font-medium text-cork-800 mb-2">Preview</h4>
+        <p className="text-sm text-cork-600">Changes are applied immediately to your cork board</p>
+      </div>
+    </div>
+  )
 }
 ```
 
-### 4.2 PWA & Offline Support
+**Settings Integration in Dashboard:**
+```typescript
+// components/features/dashboard/Dashboard.tsx (add settings button)
+export function Dashboard() {
+  const [showSettings, setShowSettings] = useState(false)
+  
+  return (
+    <div className="dashboard">
+      {/* Header with settings button */}
+      <div className="dashboard-header flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-cork-900">My Library</h1>
+        <Button
+          variant="outline"
+          onClick={() => setShowSettings(true)}
+          className="settings-button"
+        >
+          <Settings className="w-4 h-4 mr-2" />
+          Preferences
+        </Button>
+      </div>
+      
+      {/* Settings Modal */}
+      <Modal 
+        isOpen={showSettings} 
+        onClose={() => setShowSettings(false)}
+        title="Settings"
+      >
+        <UserPreferences />
+      </Modal>
+      
+      {/* Rest of dashboard content */}
+      <CorkBoard books={books} shelves={shelves} />
+    </div>
+  )
+}
+```
+
+### 4.3 PWA & Offline Support
 
 **Service Worker for Offline Support:**
 ```typescript

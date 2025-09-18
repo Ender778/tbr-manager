@@ -5,6 +5,7 @@ import {
   DndContext,
   DragOverlay,
   closestCenter,
+  closestCorners,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -78,6 +79,11 @@ export function CorkBoard({
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event
+    console.log('Drag start coordinates:', {
+      clientX: event.activatorEvent?.clientX,
+      clientY: event.activatorEvent?.clientY,
+      activeRect: active.rect.current.translated
+    })
     const book = books.find(b => b.id === active.id)
     if (book) {
       setActiveBook(book)
@@ -125,8 +131,15 @@ export function CorkBoard({
   }
 
   const handleDragOver = (event: DragOverEvent) => {
-    // This could be used for visual feedback during drag
-    // For now, we'll keep it simple
+    const { active, over } = event
+    if (over) {
+      console.log('Drag over:', {
+        activeId: active.id,
+        overId: over.id,
+        overRect: over.rect,
+        overData: over.data.current
+      })
+    }
   }
 
   return (
@@ -137,6 +150,11 @@ export function CorkBoard({
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDragOver={handleDragOver}
+        measuring={{
+          droppable: {
+            strategy: 'always',
+          },
+        }}
       >
         {/* Shelves */}
         <div className="space-y-8">
@@ -156,6 +174,7 @@ export function CorkBoard({
                       key={book.id}
                       book={book}
                       rotation={getBookRotation(book.id)}
+                      shelfColor={shelf.color}
                       onSelect={onBookSelect}
                       onEdit={onBookEdit}
                       onDelete={onBookDelete}

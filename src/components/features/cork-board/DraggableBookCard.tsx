@@ -10,6 +10,7 @@ import { cn } from '@/lib/cn'
 interface DraggableBookCardProps {
   book: Book
   rotation?: number | undefined
+  shelfColor?: string | undefined
   onSelect?: ((book: Book) => void) | undefined
   onEdit?: ((book: Book) => void) | undefined
   onDelete?: ((book: Book) => void) | undefined
@@ -19,6 +20,7 @@ interface DraggableBookCardProps {
 export function DraggableBookCard({ 
   book, 
   rotation = 0,
+  shelfColor,
   onSelect,
   onEdit,
   onDelete,
@@ -37,6 +39,8 @@ export function DraggableBookCard({
       type: 'book',
       book,
     },
+    // Ensure proper measurement
+    disabled: false,
   })
 
   const style = {
@@ -49,7 +53,7 @@ export function DraggableBookCard({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "touch-none", // Prevent default touch behaviors
+        "touch-none w-32", // Match BookCard width exactly
         isDragging && "z-50",
         className
       )}
@@ -60,6 +64,7 @@ export function DraggableBookCard({
         book={book}
         isDragging={isDragging}
         rotation={isDragging ? 0 : rotation} // Reset rotation when dragging
+        shelfColor={shelfColor}
         onSelect={onSelect}
         onEdit={onEdit}
         onDelete={onDelete}

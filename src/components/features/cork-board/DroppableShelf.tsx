@@ -28,6 +28,7 @@ export function DroppableShelf({
       shelf,
       accepts: ['book'],
     },
+    disabled: books.length > 0, // Only allow dropping on empty shelves
   })
 
   return (
@@ -52,7 +53,7 @@ export function DroppableShelf({
       <Card 
         variant="cork-board"
         className={cn(
-          "min-h-[200px] p-6 transition-all duration-200",
+          "min-h-[200px] transition-all duration-200",
           isOver && "border-amber-400 border-2 bg-amber-50/50",
           books.length === 0 && "min-h-[120px]"
         )}
@@ -60,7 +61,7 @@ export function DroppableShelf({
         <CardContent 
           ref={setNodeRef}
           className={cn(
-            "p-0",
+            "p-6",
             books.length === 0 && "flex items-center justify-center h-full"
           )}
         >
@@ -81,7 +82,7 @@ export function DroppableShelf({
             >
               <div className={cn(
                 "grid gap-4 justify-items-center",
-                // Responsive grid
+                // Responsive grid with centered items for visual alignment
                 "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8"
               )}>
                 {children}

@@ -13,6 +13,7 @@ interface BookCardProps {
   isDragging?: boolean | undefined
   isSelected?: boolean | undefined
   rotation?: number | undefined
+  shelfColor?: string | undefined
   onSelect?: ((book: Book) => void) | undefined
   onEdit?: ((book: Book) => void) | undefined
   onDelete?: ((book: Book) => void) | undefined
@@ -40,6 +41,7 @@ export function BookCard({
   isDragging = false, 
   isSelected = false,
   rotation = 0,
+  shelfColor,
   onSelect,
   onEdit,
   onDelete,
@@ -94,6 +96,7 @@ export function BookCard({
     <div
       className={cn(
         "group relative cursor-pointer select-none",
+        "w-32", // Explicit width to ensure consistent hit box sizing
         "transition-all duration-300 ease-out",
         "hover:scale-105 hover:z-10",
         isDragging && "opacity-50 rotate-0 scale-95",
@@ -123,12 +126,10 @@ export function BookCard({
           "absolute -top-2 -right-1 z-20",
           "w-4 h-4 rounded-full shadow-sm",
           "transition-all duration-200",
-          book.status === 'tbr' && "bg-red-500",
-          book.status === 'reading' && "bg-green-500",
-          book.status === 'completed' && "bg-blue-500",
-          book.status === 'dnf' && "bg-orange-500",
-          book.status === 'archived' && "bg-gray-500",
         )}
+        style={{ 
+          backgroundColor: shelfColor || '#8B4513' // Default to cork brown if no shelf color
+        }}
       />
       
       {/* Book Cover Container */}
@@ -225,16 +226,6 @@ export function BookCard({
         {/* Personal Notes Indicator */}
         {book.personal_notes && (
           <div className="absolute top-1 left-1 w-2 h-2 rounded-full bg-yellow-400 shadow-sm" />
-        )}
-
-        {/* Reading Progress (for currently reading books) */}
-        {book.status === 'reading' && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-green-200">
-            <div 
-              className="h-full bg-green-500 transition-all duration-300"
-              style={{ width: '40%' }} // This would be calculated from reading progress
-            />
-          </div>
         )}
       </div>
 

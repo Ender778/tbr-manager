@@ -26,7 +26,7 @@ const cardVariants = {
   default: 'bg-white border border-cork-200 rounded-lg shadow-sm',
   elevated: 'bg-white border border-cork-200 rounded-lg shadow-lg',
   outlined: 'bg-transparent border-2 border-cork-300 rounded-lg',
-  'cork-board': 'bg-white border border-cork-200 rounded-lg shadow-lg transform transition-transform hover:scale-[1.02]'
+  'cork-board': 'bg-white border border-cork-200 rounded-lg shadow-lg'
 }
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(

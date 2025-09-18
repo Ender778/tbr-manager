@@ -9,21 +9,31 @@ import { Card, CardContent } from "@/components/ui/Card"
 import { Modal } from "@/components/ui/Compound/Modal"
 import { LibraryIcon, PlusIcon } from "@/components/ui/Icon"
 import { useAuthStore } from '@/stores/auth-store'
+import { useBookStore } from '@/stores/book-store'
 import { UserAvatar } from '@/components/auth/UserProfile'
 import { BookSearch } from '@/components/features/search'
 import { CorkBoard } from '@/components/features/cork-board'
-import { Book, Shelf, BookPosition, BookSearchResult } from '@/types/book'
+import { BookSearchResult } from '@/types/book'
 import toast from 'react-hot-toast'
 
 export default function DashboardPage() {
   const router = useRouter()
   const { user, isInitialized, initialize, signOut } = useAuthStore()
+  const { 
+    books, 
+    shelves, 
+    bookPositions, 
+    isLoading, 
+    error,
+    addBook,
+    moveBook,
+    loadDashboardData,
+    getBookStats,
+    getTBRShelf,
+    clearError 
+  } = useBookStore()
   
-  // State
-  const [books, setBooks] = useState<Book[]>([])
-  const [shelves, setShelves] = useState<Shelf[]>([])
-  const [bookPositions, setBookPositions] = useState<BookPosition[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  // Local state
   const [isAddBookModalOpen, setIsAddBookModalOpen] = useState(false)
 
   useEffect(() => {
@@ -41,137 +51,22 @@ export default function DashboardPage() {
     if (user) {
       loadDashboardData()
     }
-  }, [user])
-
-  const loadDashboardData = async () => {
-    try {
-      setIsLoading(true)
-      
-      // Load shelves and books in parallel
-      const [shelvesResponse, booksResponse] = await Promise.all([
-        fetch('/api/shelves'),
-        fetch('/api/books')
-      ])
-
-      if (!shelvesResponse.ok || !booksResponse.ok) {
-        throw new Error('Failed to load dashboard data')
-      }
-
-      const shelvesData = await shelvesResponse.json()
-      const booksData = await booksResponse.json()
-
-      console.log('Shelves data:', shelvesData.data)
-      console.log('Books data:', booksData.data)
-      console.log('Book cover URLs:', booksData.data?.map((book: Book) => ({ title: book.title, coverUrl: book.cover_url })))
-      console.log('First shelf book_positions:', shelvesData.data[0]?.book_positions)
-
-      if (shelvesData.success) {
-        setShelves(shelvesData.data)
-        
-        // Extract book positions from shelf data
-        const positions: BookPosition[] = []
-        shelvesData.data.forEach((shelf: any) => {
-          if (shelf.book_positions) {
-            positions.push(...shelf.book_positions.map((pos: any) => ({
-              id: pos.id,
-              book_id: pos.book_id || pos.books?.id, // Try both fields
-              shelf_id: shelf.id,
-              position: pos.position,
-              user_id: user!.id,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              master_position: pos.master_position || null,
-              year_completed: pos.year_completed || null,
-            })))
-          }
-        })
-        console.log('Extracted positions:', positions)
-        setBookPositions(positions)
-      }
-
-      if (booksData.success) {
-        setBooks(booksData.data)
-      }
-
-    } catch (error) {
-      console.error('Error loading dashboard data:', error)
-      toast.error('Failed to load your books. Please refresh the page.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  }, [user, loadDashboardData])
 
   const handleBookAdd = async (searchResult: BookSearchResult) => {
-    try {
-      // Find the default "To Be Read" shelf
-      const tbrShelf = shelves.find(shelf => shelf.name === 'To Be Read' && shelf.is_default)
-      console.log('Found TBR shelf:', tbrShelf)
-      
-      const bookData = {
-        title: searchResult.title,
-        subtitle: searchResult.subtitle,
-        author: searchResult.author,
-        isbn: searchResult.isbn,
-        publisher: searchResult.publisher,
-        published_date: searchResult.publishedDate && searchResult.publishedDate instanceof Date && !isNaN(searchResult.publishedDate.getTime()) 
-          ? searchResult.publishedDate.toISOString() 
-          : undefined,
-        page_count: searchResult.pageCount,
-        language: searchResult.language,
-        cover_url: searchResult.coverUrl,
-        cover_thumbnail_url: searchResult.thumbnailUrl,
-        google_books_id: searchResult.googleBooksId,
-        status: 'tbr' as const,
-        shelfId: tbrShelf?.id,
-      }
-
-      const response = await fetch('/api/books', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookData),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to add book')
-      }
-
-      const result = await response.json()
-      
-      if (result.success) {
-        toast.success(`Added "${searchResult.title}" to your library!`)
-        setIsAddBookModalOpen(false)
-        loadDashboardData() // Reload to get updated data
-      } else {
-        throw new Error(result.error || 'Failed to add book')
-      }
-
-    } catch (error) {
-      console.error('Error adding book:', error)
-      toast.error('Failed to add book. Please try again.')
+    const tbrShelf = getTBRShelf()
+    
+    if (!tbrShelf) {
+      toast.error('No default shelf found. Please create a "To Be Read" shelf first.')
+      return
     }
+
+    await addBook(searchResult, tbrShelf.id)
+    setIsAddBookModalOpen(false)
   }
 
-  const handleBookMove = async (bookId: string, _fromShelfId: string, toShelfId: string, newPosition: number) => {
-    try {
-      // Optimistic update
-      const updatedPositions = bookPositions.map(pos => {
-        if (pos.book_id === bookId) {
-          return { ...pos, shelf_id: toShelfId, position: newPosition }
-        }
-        return pos
-      })
-      setBookPositions(updatedPositions)
-
-      // TODO: Implement API call to update book position
-      toast.success('Book moved successfully!')
-    } catch (error) {
-      console.error('Error moving book:', error)
-      toast.error('Failed to move book. Please try again.')
-      // Reload data on error to revert optimistic update
-      loadDashboardData()
-    }
+  const handleBookMove = async (bookId: string, fromShelfId: string, toShelfId: string, newPosition: number) => {
+    await moveBook(bookId, fromShelfId, toShelfId, newPosition)
   }
 
   const handleSignOut = async () => {
@@ -179,13 +74,17 @@ export default function DashboardPage() {
     router.push('/auth')
   }
 
-  // Calculate stats
-  const stats = {
-    total: books.length,
-    tbr: books.filter(book => book.status === 'tbr').length,
-    reading: books.filter(book => book.status === 'reading').length,
-    completed: books.filter(book => book.status === 'completed').length,
-  }
+  // Calculate stats using store method
+  const stats = getBookStats()
+
+  // Clear errors when component unmounts
+  useEffect(() => {
+    return () => {
+      if (error) {
+        clearError()
+      }
+    }
+  }, [error, clearError])
 
   if (!isInitialized || !user) {
     return (

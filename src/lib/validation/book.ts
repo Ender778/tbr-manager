@@ -8,7 +8,12 @@ export const bookSchema = z.object({
   author: z.string().min(1, 'Author is required').max(200).trim(),
   publisher: z.string().max(200).optional().nullable(),
   published_date: z.string().optional().nullable(),
-  page_count: z.number().min(1).max(10000).optional().nullable(),
+  page_count: z.number().max(10000).optional().nullable().transform(val => 
+    val === 0 ? null : val
+  ).refine(val => 
+    val === null || val === undefined || val > 0, {
+      message: "Page count must be greater than 0 when provided"
+    }),
   language: z.string().length(2).default('en'),
   cover_url: z.string().url().optional().nullable(),
   cover_thumbnail_url: z.string().url().optional().nullable(),
