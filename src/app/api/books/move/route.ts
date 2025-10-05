@@ -58,8 +58,8 @@ export async function POST(request: NextRequest) {
 
     // Determine new status based on shelf name
     const shelfToStatus: Record<string, string> = {
-      'To Be Read': 'tbr',
       'Currently Reading': 'reading', 
+      'To Be Read': 'tbr',
       'Completed': 'completed',
       'Did Not Finish': 'dnf',
       'Archived': 'archived'

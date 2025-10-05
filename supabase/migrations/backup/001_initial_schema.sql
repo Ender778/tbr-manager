@@ -1,21 +1,7 @@
--- =====================================================
--- TBR Manager - Complete Database Schema
--- =====================================================
--- This migration sets up the complete database schema including:
--- - Core tables (books, shelves, book_positions, tags, etc.)
--- - Performance indexes
--- - Row Level Security policies
--- - Automatic timestamp updates
--- =====================================================
-
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- =====================================================
--- TABLES
--- =====================================================
-
--- Books table - stores all book data
+-- Enhanced books table
 CREATE TABLE books (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   isbn TEXT,
@@ -39,15 +25,15 @@ CREATE TABLE books (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-
+  
   -- Data integrity constraints
   CONSTRAINT valid_completion_date CHECK (
-    (status = 'completed' AND date_completed IS NOT NULL) OR
+    (status = 'completed' AND date_completed IS NOT NULL) OR 
     (status != 'completed' AND date_completed IS NULL)
   )
 );
 
--- Shelves table - user-defined categories/shelves
+-- Enhanced shelves table
 CREATE TABLE shelves (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
@@ -60,11 +46,11 @@ CREATE TABLE shelves (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-
+  
   UNIQUE(user_id, name)
 );
 
--- Book positions table - tracks book placement on shelves
+-- Enhanced book positions table
 CREATE TABLE book_positions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   book_id UUID NOT NULL REFERENCES books(id) ON DELETE CASCADE,
@@ -75,24 +61,24 @@ CREATE TABLE book_positions (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-
+  
   UNIQUE(book_id, shelf_id),
   UNIQUE(shelf_id, position)
 );
 
--- Partial unique constraint for master positions
-CREATE UNIQUE INDEX idx_unique_master_position
-  ON book_positions(user_id, master_position)
+-- Add partial unique constraint separately
+CREATE UNIQUE INDEX idx_unique_master_position 
+  ON book_positions(user_id, master_position) 
   WHERE master_position IS NOT NULL;
 
--- Tags table - user-defined tags for categorization
+-- Tags table for categorization
 CREATE TABLE tags (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
   color TEXT DEFAULT '#6B7280',
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-
+  
   UNIQUE(user_id, name)
 );
 
@@ -101,11 +87,11 @@ CREATE TABLE book_tags (
   book_id UUID NOT NULL REFERENCES books(id) ON DELETE CASCADE,
   tag_id UUID NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-
+  
   PRIMARY KEY (book_id, tag_id)
 );
 
--- Reading sessions - track reading progress and habits
+-- Reading sessions for tracking reading habits
 CREATE TABLE reading_sessions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   book_id UUID NOT NULL REFERENCES books(id) ON DELETE CASCADE,
@@ -130,10 +116,7 @@ CREATE TABLE user_preferences (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- =====================================================
--- PERFORMANCE INDEXES
--- =====================================================
-
+-- Performance indexes
 CREATE INDEX idx_books_user_status_date ON books(user_id, status, date_added DESC);
 CREATE INDEX idx_book_positions_user_shelf_pos ON book_positions(user_id, shelf_id, position);
 CREATE INDEX idx_shelves_user_position ON shelves(user_id, position);
@@ -143,10 +126,7 @@ CREATE INDEX idx_book_tags_tag ON book_tags(tag_id);
 CREATE INDEX idx_reading_sessions_book ON reading_sessions(book_id);
 CREATE INDEX idx_reading_sessions_user ON reading_sessions(user_id);
 
--- =====================================================
--- ROW LEVEL SECURITY
--- =====================================================
-
+-- Row Level Security policies
 ALTER TABLE books ENABLE ROW LEVEL SECURITY;
 ALTER TABLE shelves ENABLE ROW LEVEL SECURITY;
 ALTER TABLE book_positions ENABLE ROW LEVEL SECURITY;
@@ -199,24 +179,24 @@ CREATE POLICY "Users can delete their own tags" ON tags
 CREATE POLICY "Users can view their own book tags" ON book_tags
     FOR SELECT USING (
         EXISTS (
-            SELECT 1 FROM books
-            WHERE books.id = book_tags.book_id
+            SELECT 1 FROM books 
+            WHERE books.id = book_tags.book_id 
             AND books.user_id = auth.uid()
         )
     );
 CREATE POLICY "Users can insert their own book tags" ON book_tags
     FOR INSERT WITH CHECK (
         EXISTS (
-            SELECT 1 FROM books
-            WHERE books.id = book_tags.book_id
+            SELECT 1 FROM books 
+            WHERE books.id = book_tags.book_id 
             AND books.user_id = auth.uid()
         )
     );
 CREATE POLICY "Users can delete their own book tags" ON book_tags
     FOR DELETE USING (
         EXISTS (
-            SELECT 1 FROM books
-            WHERE books.id = book_tags.book_id
+            SELECT 1 FROM books 
+            WHERE books.id = book_tags.book_id 
             AND books.user_id = auth.uid()
         )
     );
@@ -239,20 +219,15 @@ CREATE POLICY "Users can insert their own preferences" ON user_preferences
 CREATE POLICY "Users can update their own preferences" ON user_preferences
     FOR UPDATE USING (auth.uid() = user_id);
 
--- =====================================================
--- FUNCTIONS AND TRIGGERS
--- =====================================================
-
--- Function to automatically update updated_at timestamp
+-- Functions and triggers for updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ language 'plpgsql';
 
--- Create triggers for automatic updated_at
 CREATE TRIGGER update_books_updated_at BEFORE UPDATE ON books
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -265,7 +240,25 @@ CREATE TRIGGER update_book_positions_updated_at BEFORE UPDATE ON book_positions
 CREATE TRIGGER update_user_preferences_updated_at BEFORE UPDATE ON user_preferences
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- =====================================================
--- NOTE: Default shelves are created in application code
--- (Not via database trigger to avoid permission issues)
--- =====================================================
+-- Function to create default shelves for new users
+CREATE OR REPLACE FUNCTION create_default_shelves()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO shelves (user_id, name, position, is_default, color, icon)
+    VALUES 
+        (NEW.id, 'To Be Read', 0, true, '#8B4513', 'book'),
+        (NEW.id, 'Currently Reading', 1, true, '#059669', 'book-open'),
+        (NEW.id, 'Completed', 2, true, '#6B7280', 'check'),
+        (NEW.id, 'Did Not Finish', 3, true, '#EF4444', 'x');
+    
+    INSERT INTO user_preferences (user_id)
+    VALUES (NEW.id);
+    
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Trigger to create default shelves when a new user signs up
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION create_default_shelves();

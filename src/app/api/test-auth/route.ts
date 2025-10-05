@@ -40,8 +40,8 @@ export async function POST() {
     const { error: shelvesError } = await serviceRole
       .from('shelves')
       .insert([
-        { user_id: authData.user.id, name: 'To Be Read', position: 0, is_default: true, color: '#8B4513', icon: 'book' },
-        { user_id: authData.user.id, name: 'Currently Reading', position: 1, is_default: true, color: '#059669', icon: 'book-open' },
+        { user_id: authData.user.id, name: 'Currently Reading', position: 0, is_default: true, color: '#059669', icon: 'book-open' },
+        { user_id: authData.user.id, name: 'To Be Read', position: 1, is_default: true, color: '#8B4513', icon: 'book' },
         { user_id: authData.user.id, name: 'Completed', position: 2, is_default: true, color: '#6B7280', icon: 'check' },
         { user_id: authData.user.id, name: 'Did Not Finish', position: 3, is_default: true, color: '#EF4444', icon: 'x' }
       ])

@@ -14,25 +14,45 @@ import { UserAvatar } from '@/components/auth/UserProfile'
 import { BookSearch } from '@/components/features/search'
 import { CorkBoard } from '@/components/features/cork-board'
 import { BookSearchResult } from '@/types/book'
+import { useDashboardData, useBookStats } from '@/hooks/use-dashboard'
+import { useOrderedShelves } from '@/hooks/use-ordered-shelves'
 import toast from 'react-hot-toast'
 
 export default function DashboardPage() {
   const router = useRouter()
   const { user, isInitialized, initialize, signOut } = useAuthStore()
-  const { 
-    books, 
-    shelves, 
-    bookPositions, 
-    isLoading, 
-    error,
+
+  // React Query hooks for data fetching
+  const { data: dashboardData, isLoading: isLoadingData, dataUpdatedAt, refetchDashboard } = useDashboardData()
+
+  // Zustand store for mutations (with optimistic updates) and current state
+  const {
+    books: storeBooks,
+    shelves: storeShelves,
+    bookPositions: storeBookPositions,
+    isLoading: isMutating,
     addBook,
     moveBook,
-    loadDashboardData,
-    getBookStats,
     getTBRShelf,
-    clearError 
   } = useBookStore()
-  
+
+  // Only sync React Query data to Zustand on initial load or after mutations complete
+  // This prevents React Query from overwriting optimistic updates
+  const [lastSyncTime, setLastSyncTime] = useState(0)
+  useEffect(() => {
+    if (dashboardData && !isMutating && dataUpdatedAt > lastSyncTime) {
+      useBookStore.setState({
+        books: dashboardData.books,
+        shelves: dashboardData.shelves,
+        bookPositions: dashboardData.bookPositions,
+      })
+      setLastSyncTime(dataUpdatedAt)
+    }
+  }, [dashboardData, isMutating, dataUpdatedAt, lastSyncTime])
+
+  // Get book stats from store (computed from current state)
+  const stats = useBookStats()
+
   // Local state
   const [isAddBookModalOpen, setIsAddBookModalOpen] = useState(false)
 
@@ -46,27 +66,45 @@ export default function DashboardPage() {
     }
   }, [isInitialized, user, router])
 
-  // Load data when user is available
-  useEffect(() => {
-    if (user) {
-      loadDashboardData()
-    }
-  }, [user, loadDashboardData])
+  // IMPORTANT: Extract data and call hooks BEFORE any early returns
+  // This ensures hooks are always called in the same order (Rules of Hooks)
 
+  // Use Zustand store data (includes optimistic updates)
+  // Fall back to React Query data on initial load
+  const books = storeBooks.length > 0 ? storeBooks : (dashboardData?.books || [])
+  const rawShelves = storeShelves.length > 0 ? storeShelves : (dashboardData?.shelves || [])
+  const bookPositions = storeBookPositions.length > 0 ? storeBookPositions : (dashboardData?.bookPositions || [])
+
+  // Get shelves in user-preferred order (UI-based, not DB position)
+  const shelves = useOrderedShelves(rawShelves)
+
+  // Event handlers
   const handleBookAdd = async (searchResult: BookSearchResult) => {
     const tbrShelf = getTBRShelf()
-    
+
     if (!tbrShelf) {
       toast.error('No default shelf found. Please create a "To Be Read" shelf first.')
       return
     }
 
-    await addBook(searchResult, tbrShelf.id)
-    setIsAddBookModalOpen(false)
+    try {
+      await addBook(searchResult, tbrShelf.id)
+      setIsAddBookModalOpen(false)
+      // Refetch dashboard data after successful add to sync with database
+      await refetchDashboard()
+    } catch (error) {
+      console.error('Failed to add book:', error)
+    }
   }
 
   const handleBookMove = async (bookId: string, fromShelfId: string, toShelfId: string, newPosition: number) => {
-    await moveBook(bookId, fromShelfId, toShelfId, newPosition)
+    try {
+      await moveBook(bookId, fromShelfId, toShelfId, newPosition)
+      // Refetch dashboard data after successful move to sync with database
+      await refetchDashboard()
+    } catch (error) {
+      console.error('Failed to move book:', error)
+    }
   }
 
   const handleSignOut = async () => {
@@ -74,18 +112,7 @@ export default function DashboardPage() {
     router.push('/auth')
   }
 
-  // Calculate stats using store method
-  const stats = getBookStats()
-
-  // Clear errors when component unmounts
-  useEffect(() => {
-    return () => {
-      if (error) {
-        clearError()
-      }
-    }
-  }, [error, clearError])
-
+  // Early return AFTER all hooks have been called
   if (!isInitialized || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -150,14 +177,14 @@ export default function DashboardPage() {
                 </Card>
                 <Card>
                   <CardContent className="p-6">
-                    <Text className="text-2xl font-bold text-amber-800">{stats.tbr}</Text>
-                    <Text color="muted">To Be Read</Text>
+                    <Text className="text-2xl font-bold text-amber-800">{stats.reading}</Text>
+                    <Text color="muted">Currently Reading</Text>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-6">
-                    <Text className="text-2xl font-bold text-amber-800">{stats.reading}</Text>
-                    <Text color="muted">Currently Reading</Text>
+                    <Text className="text-2xl font-bold text-amber-800">{stats.tbr}</Text>
+                    <Text color="muted">To Be Read</Text>
                   </CardContent>
                 </Card>
                 <Card>
@@ -170,7 +197,7 @@ export default function DashboardPage() {
             </Section>
 
             {/* Cork Board */}
-            {isLoading ? (
+            {isLoadingData ? (
               <Card variant="cork-board" className="min-h-[600px] p-8">
                 <div className="flex items-center justify-center h-full">
                   <div className="h-8 w-8 animate-spin rounded-full border-4 border-cork-600 border-t-transparent" />

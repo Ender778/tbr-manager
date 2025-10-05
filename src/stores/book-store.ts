@@ -197,8 +197,8 @@ export const useBookStore = create<BookStore>()(
             if (targetShelf) {
               // Map shelf names to book statuses
               const shelfToStatus: Record<string, string> = {
-                'To Be Read': 'tbr',
                 'Currently Reading': 'reading', 
+                'To Be Read': 'tbr',
                 'Completed': 'completed',
                 'Did Not Finish': 'dnf',
                 'Archived': 'archived'

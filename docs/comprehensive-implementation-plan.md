@@ -1218,17 +1218,26 @@ function sendToAnalytics(metric: Metric) {
 - **Responsive Design** - Works on different screen sizes
 - **Error Handling** - Graceful handling of missing covers, invalid dates, API failures
 
-### 📍 WHERE WE LEFT OFF (Ready for Phase 2)
-**Status**: Phase 1 is 100% complete and fully functional. Users can:
-1. ✅ Sign up/login with full authentication
-2. ✅ Search for books using Google Books API  
-3. ✅ Add books to their library
-4. ✅ See books displayed as visual cards on a cork board
-5. ✅ Drag books between different shelves
-6. ✅ View book covers, titles, authors, and status
-7. ✅ Navigate with responsive design
+### 📍 CURRENT STATUS (Phase 2 - Advanced Features - IN PROGRESS)
+**Phase 1**: ✅ 100% complete and fully functional
 
-**Next Steps**: Ready to begin Phase 2 - Advanced Features
+**Phase 2 Progress** (Updated: 2025-10-05):
+1. ✅ **Zustand + React Query Integration** - Optimistic updates with smart caching
+2. ✅ **UI-Based Shelf Ordering** - Shelves can be reordered independently of database
+3. ✅ **Database Migration Consolidation** - 7 migrations → 2 clean files
+4. ✅ **Bug Fix**: Book moving now persists correctly without refresh
+5. 🔄 **In Progress**: Virtual scrolling, advanced search, book ratings/notes
+
+**Current Capabilities**:
+- ✅ Sign up/login with full authentication
+- ✅ Search for books using Google Books API
+- ✅ Add books to library with optimistic UI updates
+- ✅ Visual cork board with drag-and-drop
+- ✅ Books persist immediately after moving (no refresh needed)
+- ✅ Custom shelf ordering saved to localStorage
+- ✅ Responsive design with mobile support
+
+**Next Steps**: Continue Phase 2 features (ratings, notes, statistics)
 
 ---
 
@@ -1256,19 +1265,38 @@ function sendToAnalytics(metric: Metric) {
 - **Responsive Design** ready for different screen sizes
 - **Image Optimization** configured for book covers
 
-**Ready to start Phase 2 - Advanced Features**
+**Phase 2 - Advanced Features (Weeks 9-16) - 🔄 IN PROGRESS (40% Complete)**
 
-### Phase 2 - Advanced Features (Weeks 9-16)
-- [ ] Implement Zustand state management with optimistic updates
+### ✅ Completed in Phase 2
+- [x] **Implement Zustand state management with optimistic updates**
+  - ✅ Full optimistic updates for book add/move/update/delete
+  - ✅ Automatic rollback on errors
+  - ✅ Toast notifications for user feedback
+- [x] **Set up caching strategy with React Query**
+  - ✅ Smart 5-minute cache with configurable stale time
+  - ✅ React Query DevTools for debugging
+  - ✅ Automatic cache invalidation after mutations
+- [x] **Build UI-based shelf ordering system**
+  - ✅ Preferences store with localStorage persistence
+  - ✅ Independent shelf ordering (not tied to DB position)
+  - ✅ Automatic sync of new shelves
+- [x] **Fix critical bugs**
+  - ✅ Book moves now persist without refresh
+  - ✅ Fixed React Query/Zustand sync timing
+- [x] **Database optimization**
+  - ✅ Consolidated 7 migrations into 2 clean files
+  - ✅ Removed conflicting triggers
+  - ✅ Final move_book_position function using DELETE/INSERT strategy
+
+### 🔄 In Progress / Remaining Phase 2 Items
 - [ ] Add virtual scrolling for large book collections
 - [ ] Create advanced search with debouncing and filters
-- [ ] Build shelf management system with drag-and-drop reordering
+- [ ] Build shelf drag-and-drop reordering UI
 - [ ] Implement master reading list functionality
 - [ ] Add book rating and note-taking features
 - [ ] Create reading statistics and progress tracking
 - [ ] Implement bulk import functionality (CSV, Goodreads)
 - [ ] Add export capabilities for book data
-- [ ] Set up caching strategy with React Query
 
 ### Phase 3 - Mobile & Accessibility (Weeks 17-20)
 - [ ] Implement touch-optimized drag-and-drop for mobile
@@ -1427,5 +1455,148 @@ export function createBookDisplayData(book: Book) {
 
 **Next Development Session Ready For:**
 Phase 2 implementation with solid type foundation, including advanced state management with Zustand and React Query integration.
+
+---
+
+## Session Notes: Phase 2.1 Implementation (2025-10-05)
+
+### 🎯 Session Accomplishments
+
+This session focused on implementing **Phase 2.1: Advanced State Management & Optimization**, achieving 40% completion of Phase 2.
+
+#### 1. React Query Integration ✅
+**Files Created:**
+- `src/providers/query-provider.tsx` - React Query client with smart defaults
+- `src/providers/index.tsx` - Combined providers (React Query + Toast)
+- `src/hooks/use-books.ts` - Type-safe book query hooks
+- `src/hooks/use-shelves.ts` - Type-safe shelf query hooks
+- `src/hooks/use-dashboard.ts` - Combined dashboard data fetching
+
+**Configuration:**
+- 5-minute stale time for efficient caching
+- React Query DevTools for development
+- Automatic cache invalidation after mutations
+- Custom refetch controls to prevent overwriting optimistic updates
+
+**Files Modified:**
+- `src/app/layout.tsx` - Added Providers wrapper
+
+#### 2. UI-Based Shelf Ordering System ✅
+**Problem Solved:** Shelf display order was tied to database position field, making reordering complex.
+
+**Solution Implemented:**
+- `src/stores/preferences-store.ts` - Zustand store with localStorage persistence
+- `src/hooks/use-ordered-shelves.ts` - Hook for managing shelf display order
+
+**Features:**
+- Shelf order stored in localStorage (user-specific, client-side)
+- Automatic sync when new shelves are created
+- Fallback to database position if no custom order exists
+- Prepared for future drag-and-drop shelf reordering UI
+
+**Files Modified:**
+- `src/app/dashboard/page.tsx` - Uses `useOrderedShelves()` hook
+
+#### 3. Critical Bug Fix: Book Moving Persistence ✅
+**Problem:** Books appeared to move successfully but reverted to original position until page refresh.
+
+**Root Cause:** React Query's automatic refetch was overwriting Zustand's optimistic updates before the database mutation completed.
+
+**Solution:**
+1. Disabled automatic refetch on mount/window focus in dashboard query
+2. Added sync timing logic using `dataUpdatedAt` timestamp
+3. Only sync React Query → Zustand when mutations aren't in progress
+4. Manual refetch trigger after successful mutations
+5. Use Zustand state as source of truth for rendering
+
+**Files Modified:**
+- `src/hooks/use-dashboard.ts` - Added `refetchDashboard` method, disabled auto-refetch
+- `src/app/dashboard/page.tsx` - Smart sync logic with timing guards
+
+**Result:** Books now persist immediately after drag-and-drop without requiring refresh.
+
+#### 4. Rules of Hooks Violation Fix ✅
+**Problem:** `useOrderedShelves` was called after conditional early return, causing hook order to change between renders.
+
+**Solution:** Moved all hook calls (including `useOrderedShelves`) before the conditional return in Dashboard component.
+
+**Files Modified:**
+- `src/app/dashboard/page.tsx` - Reorganized to call all hooks before early returns
+
+#### 5. Database Migration Consolidation ✅
+**Problem:** 7 overlapping migration files with conflicting changes made schema difficult to understand.
+
+**Original Files:**
+1. `001_initial_schema.sql` - Complete schema
+2. `002_fix_auth_trigger.sql` - Fixed trigger
+3. `003_remove_problematic_trigger.sql` - Removed trigger (conflicts with #2)
+4-7. Four different versions of `move_book_position` function
+
+**Consolidation:**
+- **New File 1:** `001_initial_schema.sql` (10.8 KB) - Complete schema with documentation
+- **New File 2:** `002_move_book_position_function.sql` (3 KB) - Final working version
+- **Backup:** All original files preserved in `supabase/migrations/backup/`
+- **Documentation:** `MIGRATION_CONSOLIDATION.md` explaining changes
+
+**Benefits:**
+- Single source of truth for each feature
+- Clear documentation and comments
+- Easy to understand final database state
+- Removed trigger conflicts (default shelves now created in app code)
+
+### 📊 Phase 2 Progress Summary
+
+**Completed (40% of Phase 2):**
+- ✅ Zustand + React Query integration
+- ✅ Optimistic updates with automatic rollback
+- ✅ Smart caching strategy
+- ✅ UI-based shelf ordering
+- ✅ Database migration consolidation
+- ✅ Critical bug fixes
+
+**Remaining Phase 2 Features:**
+- Virtual scrolling for large collections
+- Advanced search with filters
+- Book rating UI and persistence
+- Personal notes/annotations
+- Reading statistics dashboard
+- Master reading list (universal order)
+- Bulk import (CSV, Goodreads)
+- Data export capabilities
+
+### 🎯 Next Recommended Steps
+
+Based on user value and implementation order:
+
+1. **Book Rating & Notes** (High Value, Medium Effort)
+   - Add rating stars to BookCard
+   - Create notes modal/drawer
+   - Update database on rating/note changes
+   - Display in book hover overlay
+
+2. **Reading Statistics Dashboard** (High Value, Medium Effort)
+   - Total books read
+   - Books per year/month
+   - Average rating
+   - Reading streaks
+   - Genre breakdown charts
+
+3. **Advanced Search & Filters** (Medium Value, Low Effort)
+   - Filter by status, rating, shelf
+   - Search in titles, authors, notes
+   - Debounced search with highlights
+
+4. **Virtual Scrolling** (Low Value until 100+ books, Medium Effort)
+   - Only needed when collection grows
+   - Can defer until performance becomes issue
+
+### 🔧 Technical Debt / Future Considerations
+
+1. **Shelf Drag-and-Drop UI:** Infrastructure is ready (preferences store), just needs UI component
+2. **Master Reading List:** Requires new table column or separate table for cross-shelf ordering
+3. **Mobile Optimization:** Phase 3 focus, but basic responsiveness is working
+4. **Testing:** No automated tests yet - should add Jest/Playwright tests
+
+---
 
 This comprehensive implementation plan provides a structured approach to building a world-class TBR Manager application that prioritizes user experience, accessibility, performance, and security while incorporating modern development practices and innovative features.

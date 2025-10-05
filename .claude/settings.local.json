@@ -1,13 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install:*)",
-      "Bash(mkdir:*)"
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
-    "ask": [],
-    "additionalDirectories": [
-      "C:\\c\\Users\\palad\\Desktop\\Projects\\tbr-manager\\tbr-manager\\src\\app"
-    ]
+    "ask": []
   }
 }
