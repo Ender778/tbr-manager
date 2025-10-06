@@ -13,9 +13,10 @@ import { useBookStore } from '@/stores/book-store'
 import { UserAvatar } from '@/components/auth/UserProfile'
 import { BookSearch } from '@/components/features/search'
 import { CorkBoard } from '@/components/features/cork-board'
-import { BookSearchResult } from '@/types/book'
+import { BookSearchResult, Book } from '@/types/book'
 import { useDashboardData, useBookStats } from '@/hooks/use-dashboard'
 import { useOrderedShelves } from '@/hooks/use-ordered-shelves'
+import { BookDetailsModal } from '@/components/features/book-details'
 import toast from 'react-hot-toast'
 
 export default function DashboardPage() {
@@ -55,6 +56,8 @@ export default function DashboardPage() {
 
   // Local state
   const [isAddBookModalOpen, setIsAddBookModalOpen] = useState(false)
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null)
+  const [isBookDetailsOpen, setIsBookDetailsOpen] = useState(false)
 
   useEffect(() => {
     initialize()
@@ -110,6 +113,19 @@ export default function DashboardPage() {
   const handleSignOut = async () => {
     await signOut()
     router.push('/auth')
+  }
+
+  const handleBookSelect = (book: Book) => {
+    setSelectedBook(book)
+    setIsBookDetailsOpen(true)
+  }
+
+  const handleBookDetailsClose = async () => {
+    setIsBookDetailsOpen(false)
+    // Refetch data after closing to ensure we have latest changes
+    await refetchDashboard()
+    // Small delay to avoid jarring transition
+    setTimeout(() => setSelectedBook(null), 300)
   }
 
   // Early return AFTER all hooks have been called
@@ -228,6 +244,7 @@ export default function DashboardPage() {
                 books={books}
                 bookPositions={bookPositions}
                 onBookMove={handleBookMove}
+                onBookSelect={handleBookSelect}
               />
             )}
           </Section>
@@ -245,6 +262,13 @@ export default function DashboardPage() {
           </div>
         </Modal.Content>
       </Modal.Root>
+
+      {/* Book Details Modal */}
+      <BookDetailsModal
+        book={selectedBook}
+        isOpen={isBookDetailsOpen}
+        onClose={handleBookDetailsClose}
+      />
     </PageLayout>
   )
 }

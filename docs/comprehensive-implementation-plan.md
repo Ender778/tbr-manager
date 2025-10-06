@@ -1600,3 +1600,189 @@ Based on user value and implementation order:
 ---
 
 This comprehensive implementation plan provides a structured approach to building a world-class TBR Manager application that prioritizes user experience, accessibility, performance, and security while incorporating modern development practices and innovative features.
+---
+
+## Session Notes: Book Rating & Notes Feature (2025-10-05 Continued)
+
+### 🎯 Session Accomplishments
+
+**Completed Feature: Book Rating & Personal Notes System** ✅
+
+This session implemented a comprehensive book details modal with rating and notes functionality, completing another 10% of Phase 2 (now at 50% total).
+
+#### 1. Star Rating Component ✅
+**File Created:** `src/components/ui/StarRating.tsx`
+
+**Features:**
+- Interactive 5-star rating system
+- Hover states with visual feedback
+- Click to rate, click same rating to clear
+- Readonly mode for display-only
+- Size variants: sm, md, lg
+- Optional label showing "X/5" or "Not rated"
+- Accessible with proper ARIA labels
+- Smooth animations and transitions
+
+**Implementation:**
+```typescript
+<StarRating
+  rating={rating}
+  onChange={setRating}
+  size="lg"
+  showLabel
+/>
+```
+
+#### 2. Book Details Modal ✅
+**File Created:** `src/components/features/book-details/BookDetailsModal.tsx`
+
+**Features:**
+- **Book Cover Display:** Large cover image with proper sizing
+- **Full Metadata:** Title, subtitle, author, publisher, published date, page count, ISBN
+- **Status Badge:** Visual badge showing current reading status (TBR, Reading, Completed, DNF)
+- **Interactive Rating:** Star rating component for user ratings
+- **Personal Notes:** Textarea with character counter for personal thoughts
+- **Date Tracking:** Shows date added, date started, date completed
+- **Save/Cancel Actions:** Disabled save button when no changes, loading state
+
+**Integration:**
+- Uses `updateBook` mutation from Zustand store
+- Optimistic updates with automatic rollback on errors
+- Toast notifications for user feedback
+- Closes modal after successful save
+
+#### 3. API Endpoint for Book Updates ✅
+**File Created:** `src/app/api/books/[bookId]/route.ts`
+
+**Endpoints:**
+- **PATCH /api/books/[bookId]:** Update book fields (rating, notes, status, etc.)
+- **DELETE /api/books/[bookId]:** Delete book (cascade removes positions)
+
+**Features:**
+- Zod validation for all update fields
+- User ownership verification (RLS-like check)
+- Supports nullable fields (rating, notes can be cleared)
+- Proper error handling with detailed messages
+
+**Schema:**
+```typescript
+const updateBookSchema = z.object({
+  rating: z.number().min(1).max(5).nullable().optional(),
+  personal_notes: z.string().nullable().optional(),
+  status: z.enum(['tbr', 'reading', 'completed', 'dnf', 'archived']).optional(),
+  // ... other fields
+})
+```
+
+#### 4. Dashboard Integration ✅
+**File Modified:** `src/app/dashboard/page.tsx`
+
+**Changes:**
+- Added state: `selectedBook`, `isBookDetailsOpen`
+- Added handler: `handleBookSelect()` - Opens modal with selected book
+- Added handler: `handleBookDetailsClose()` - Closes modal, refetches data
+- Connected `onBookSelect` prop to CorkBoard component
+- Rendered BookDetailsModal at bottom of page layout
+
+**User Flow:**
+1. User clicks any book on cork board
+2. `handleBookSelect` sets selected book and opens modal
+3. User views full details, updates rating/notes
+4. User clicks "Save Changes"
+5. Mutation runs with optimistic update
+6. Modal closes, dashboard refetches to sync
+7. Cork board shows updated book with new rating
+
+#### 5. Component Export Updates ✅
+**File Modified:** `src/components/ui/index.ts`
+
+Added StarRating to centralized exports for clean imports throughout the app.
+
+### 📊 Phase 2 Progress Update
+
+**Completed (50% of Phase 2):**
+- ✅ Zustand + React Query integration
+- ✅ Optimistic updates with automatic rollback
+- ✅ Smart caching strategy (5-min stale time)
+- ✅ UI-based shelf ordering (localStorage)
+- ✅ Database migration consolidation
+- ✅ Critical bug fixes (book moving, Rules of Hooks)
+- ✅ **Book Rating & Notes System** ⭐ NEW
+
+**User-Facing Features Now Available:**
+1. Click any book to view full details
+2. Rate books with 1-5 stars (click same star to clear)
+3. Add personal notes/thoughts about books
+4. View all book metadata in one place
+5. See status badges and date tracking
+6. Changes save with visual feedback
+
+**Remaining Phase 2 Features (50%):**
+- Virtual scrolling for large collections
+- Advanced search with filters
+- Reading statistics dashboard
+- Master reading list (universal order)
+- Bulk import (CSV, Goodreads)
+- Completed books archive by year
+- Shelf drag-and-drop reordering UI
+- Data export capabilities
+
+### 🎯 Next Recommended Steps
+
+**High Value, Quick Wins:**
+
+1. **Reading Statistics Dashboard** (High Value)
+   - Create `/dashboard/stats` page or modal
+   - Display: Total books, books this year, average rating, pages read
+   - Charts: Genre distribution, monthly reading progress
+   - Use existing data, no DB changes needed
+   - Estimated: 2-3 hours
+
+2. **Advanced Search & Filters** (Medium Value, Low Effort)
+   - Add filter dropdowns: status, rating, shelf
+   - Search across: title, author, personal notes
+   - Debounced search with result highlights
+   - Estimated: 1-2 hours
+
+3. **Export Book Data** (Medium Value, Low Effort)
+   - Export to CSV with all book data
+   - Export notes separately
+   - Goodreads-compatible format option
+   - Estimated: 1 hour
+
+**Deferred (Lower Priority):**
+- Virtual scrolling - only needed at 100+ books
+- Master reading list - requires UX design first
+- Bulk import - needs file upload infrastructure
+
+### 🔧 Technical Notes
+
+**Files Created This Session:**
+- `src/components/ui/StarRating.tsx` (104 lines)
+- `src/components/features/book-details/BookDetailsModal.tsx` (225 lines)
+- `src/components/features/book-details/index.ts` (export file)
+- `src/app/api/books/[bookId]/route.ts` (147 lines)
+
+**Files Modified:**
+- `src/app/dashboard/page.tsx` - Added modal integration
+- `src/components/ui/index.ts` - Added StarRating export
+
+**Database Changes:**
+- None required (rating and personal_notes columns already exist)
+
+**State Management:**
+- Using existing `updateBook` mutation from book-store
+- Optimistic updates already working
+- React Query refetch after modal close ensures sync
+
+### ✅ Quality Checklist
+
+- [x] TypeScript strict mode compliance
+- [x] Responsive design (modal scales properly)
+- [x] Accessible (ARIA labels, keyboard navigation)
+- [x] Error handling (toast notifications)
+- [x] Loading states (disabled buttons, loading text)
+- [x] Data validation (Zod schemas)
+- [x] Optimistic updates (immediate UI feedback)
+- [x] Field name consistency (snake_case throughout)
+

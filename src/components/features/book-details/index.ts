@@ -1,0 +1,1 @@
+export { BookDetailsModal } from './BookDetailsModal'
