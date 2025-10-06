@@ -93,15 +93,14 @@ CREATE TABLE books (
   page_count INTEGER,
   language TEXT DEFAULT 'en',
   cover_url TEXT,
-  cover_thumbnail_url TEXT,
   google_books_id TEXT,
   open_library_id TEXT,
   status TEXT DEFAULT 'tbr' CHECK (status IN ('tbr', 'reading', 'completed', 'dnf', 'archived')),
   rating INTEGER CHECK (rating >= 1 AND rating <= 5),
   personal_notes TEXT,
-  date_added TIMESTAMP DEFAULT NOW(),
-  date_started TIMESTAMP,
-  date_completed TIMESTAMP,
+  date_added TIMESTAMP DEFAULT NOW(), -- User editable
+  date_started TIMESTAMP, -- Auto-filled when moved to 'reading' status (first time only), user editable
+  date_completed TIMESTAMP, -- Auto-filled when status set to 'completed', user editable
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW(),
@@ -1721,6 +1720,12 @@ Added StarRating to centralized exports for clean imports throughout the app.
 - Virtual scrolling for large collections
 - Advanced search with filters
 - Reading statistics dashboard
+- **Date Management & Tracking System** ⭐ PLANNED
+  - Manual editing of date_added, date_started, and date_completed
+  - Auto-fill date_started when book moved to 'Currently Reading' (first time only)
+  - Guard to prevent overwriting date_started on subsequent moves to 'reading' status
+  - Date picker UI components for manual date editing, look for Shadcn UI date picker
+  - Validation to ensure logical date ordering (added ≤ started ≤ completed)
 - Master reading list (universal order)
 - Bulk import (CSV, Goodreads)
 - Completed books archive by year
@@ -1731,20 +1736,29 @@ Added StarRating to centralized exports for clean imports throughout the app.
 
 **High Value, Quick Wins:**
 
-1. **Reading Statistics Dashboard** (High Value)
+1. **Date Management & Tracking System** (High Value, Medium Effort)
+   - Add date picker to BookDetailsModal for manual date editing
+   - Implement auto-fill logic for date_started on first move to 'reading' status
+   - Add guard in moveBook mutation to check if date_started already exists
+   - Update API route to handle date updates with validation
+   - Display dates in a formatted, user-friendly way in BookDetailsModal
+   - Add tooltips explaining auto-fill behavior
+   - Estimated: 2-3 hours
+
+2. **Reading Statistics Dashboard** (High Value)
    - Create `/dashboard/stats` page or modal
    - Display: Total books, books this year, average rating, pages read
    - Charts: Genre distribution, monthly reading progress
    - Use existing data, no DB changes needed
    - Estimated: 2-3 hours
 
-2. **Advanced Search & Filters** (Medium Value, Low Effort)
+3. **Advanced Search & Filters** (Medium Value, Low Effort)
    - Add filter dropdowns: status, rating, shelf
    - Search across: title, author, personal notes
    - Debounced search with result highlights
    - Estimated: 1-2 hours
 
-3. **Export Book Data** (Medium Value, Low Effort)
+4. **Export Book Data** (Medium Value, Low Effort)
    - Export to CSV with all book data
    - Export notes separately
    - Goodreads-compatible format option
@@ -1786,3 +1800,15 @@ Added StarRating to centralized exports for clean imports throughout the app.
 - [x] Optimistic updates (immediate UI feedback)
 - [x] Field name consistency (snake_case throughout)
 
+
+---
+
+## 📋 Additional Planned Features
+
+For detailed specifications of upcoming features including:
+- Enhanced Book Details Modal (genre tags, format, ownership, progress tracker)
+- Library View Modes (cork board, list by section, full list with customizable columns)
+- Custom Shelf Creation & Management
+- User Preferences & Global Settings (field visibility, column customization)
+
+**See: [planned-features.md](./planned-features.md) for complete details**
