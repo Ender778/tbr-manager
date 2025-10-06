@@ -102,7 +102,29 @@
   - Auto-set status to 'completed' when progress = 100%
 - **Estimated Effort:** 2-3 hours
 
-**Total Estimated Effort for Feature Set 1:** 10-12 hours
+### 1.7 Goodreads Review Score
+**Implementation Details:**
+- **Display:** Read-only field showing Goodreads average rating
+- **Data Source:** Google Books API often includes Goodreads data in `volumeInfo.averageRating`
+- **Database:** Add `goodreads_rating` column to books table
+  ```sql
+  ALTER TABLE books ADD COLUMN goodreads_rating DECIMAL(3,2)
+    CHECK (goodreads_rating >= 0 AND goodreads_rating <= 5);
+  ```
+- **UI Display:**
+  - Star rating (read-only, different style from user rating)
+  - Text: "Goodreads: 4.23 / 5.0"
+  - Small badge or label to distinguish from personal rating
+- **API Integration:**
+  - Auto-populate from Google Books API when available
+  - Fallback: Manual entry if API doesn't provide
+  - Refresh option to update from API
+- **Comparison Feature:**
+  - Show both Goodreads rating and personal rating side-by-side
+  - Visual indicator if personal rating differs significantly
+- **Estimated Effort:** 1-2 hours
+
+**Total Estimated Effort for Feature Set 1:** 11-14 hours
 
 ---
 
@@ -140,13 +162,14 @@
   - Book title (bold)
   - Author name
   - Genre tags
-  - Rating stars
+  - Rating stars (personal)
+  - Goodreads rating
   - Progress percentage (if applicable)
   - Ownership badge
   - Format icon
 - **Column Customization:**
   - **Add/Remove Columns:** Users can show/hide any field from BookDetailsModal
-  - **Available Columns:** All fields from book details (genre, format, ownership, progress, summary, notes, dates, published date, etc.)
+  - **Available Columns:** All fields from book details (genre, format, ownership, progress, summary, notes, dates, published date, personal rating, Goodreads rating, etc.)
   - **Column Order:** Drag-and-drop to reorder columns
   - **Persistence:** Save column preferences per view mode in localStorage
   - **Reset to Default:** Button to restore default column configuration
@@ -173,14 +196,15 @@
   3. Author
   4. Shelf/Category
   5. Status badge
-  6. Rating
-  7. Progress %
-  8. Date Added
-  9. Format
-  10. Ownership
+  6. Rating (personal)
+  7. Goodreads Rating
+  8. Progress %
+  9. Date Added
+  10. Format
+  11. Ownership
 - **Column Customization:**
   - **Add/Remove Columns:** Same functionality as List by Section
-  - **All Available Fields:** Genre, Summary (truncated), Notes (truncated), Published Date, Date Started, Date Completed, Page Count, ISBN, Publisher, etc.
+  - **All Available Fields:** Genre, Summary (truncated), Notes (truncated), Published Date, Date Started, Date Completed, Page Count, ISBN, Publisher, Personal Rating, Goodreads Rating, etc.
   - **Column Visibility Toggle:** Checkbox list in settings
   - **Column Width:** Resizable columns with drag handles
   - **Sticky Columns:** Pin important columns (e.g., Title, Cover) to left
@@ -305,8 +329,9 @@ ALTER TABLE shelves ADD COLUMN config JSONB DEFAULT '{}';
   │  ☑ Summary/Description ☑ Personal Notes      │
   │  ☑ Published Date      ☑ Date Added          │
   │  ☑ Date Started        ☑ Date Completed      │
-  │  ☑ Rating              ☑ ISBN                │
-  │  ☑ Publisher           ☑ Page Count          │
+  │  ☑ Rating              ☑ Goodreads Rating    │
+  │  ☑ ISBN                ☑ Publisher           │
+  │  ☑ Page Count                                │
   │                                               │
   │  [Reset to Defaults]           [Save Changes]│
   └───────────────────────────────────────────────┘
@@ -347,7 +372,8 @@ ALTER TABLE shelves ADD COLUMN config JSONB DEFAULT '{}';
   │  ☑ ≡ Title                    [Pin 📌]       │
   │  ☑ ≡ Author                                  │
   │  ☑ ≡ Genre                                   │
-  │  ☑ ≡ Rating                                  │
+  │  ☑ ≡ Rating (Personal)                       │
+  │  ☑ ≡ Goodreads Rating                        │
   │  ☐ ≡ Progress                                │
   │  ☑ ≡ Format                                  │
   │  ☑ ≡ Ownership                               │
@@ -452,6 +478,7 @@ ALTER TABLE books
   ADD COLUMN format TEXT CHECK (format IN ('paperback', 'hardcover', 'ebook', 'audiobook')),
   ADD COLUMN ownership TEXT CHECK (ownership IN ('own', 'library', 'borrow')),
   ADD COLUMN current_page INTEGER CHECK (current_page >= 0 AND current_page <= page_count),
+  ADD COLUMN goodreads_rating DECIMAL(3,2) CHECK (goodreads_rating >= 0 AND goodreads_rating <= 5),
   ADD COLUMN description TEXT; -- For book summary
 
 -- Migration: Add shelf customization
@@ -466,18 +493,18 @@ ALTER TABLE user_preferences
     "progress": true, "summary": true, "notes": true,
     "published_date": true, "date_added": true,
     "date_started": true, "date_completed": true,
-    "rating": true, "isbn": true, "publisher": true,
-    "page_count": true
+    "rating": true, "goodreads_rating": true,
+    "isbn": true, "publisher": true, "page_count": true
   }',
   ADD COLUMN list_view_columns JSONB DEFAULT '{
     "listViewBySection": {
-      "visibleColumns": ["cover", "title", "author", "genre", "rating", "format", "ownership", "date_added"],
-      "columnOrder": ["cover", "title", "author", "genre", "rating", "format", "ownership", "date_added"],
+      "visibleColumns": ["cover", "title", "author", "genre", "rating", "goodreads_rating", "format", "ownership", "date_added"],
+      "columnOrder": ["cover", "title", "author", "genre", "rating", "goodreads_rating", "format", "ownership", "date_added"],
       "pinnedColumns": ["cover", "title"]
     },
     "fullListView": {
-      "visibleColumns": ["cover", "title", "author", "shelf", "status", "rating", "progress", "date_added", "format", "ownership"],
-      "columnOrder": ["cover", "title", "author", "shelf", "status", "rating", "progress", "date_added", "format", "ownership"],
+      "visibleColumns": ["cover", "title", "author", "shelf", "status", "rating", "goodreads_rating", "progress", "date_added", "format", "ownership"],
+      "columnOrder": ["cover", "title", "author", "shelf", "status", "rating", "goodreads_rating", "progress", "date_added", "format", "ownership"],
       "pinnedColumns": ["cover", "title"]
     }
   }';
