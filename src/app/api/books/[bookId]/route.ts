@@ -17,6 +17,7 @@ const updateBookSchema = z.object({
   status: z.enum(['tbr', 'reading', 'completed', 'dnf', 'archived']).optional(),
   rating: z.number().min(1).max(5).nullable().optional(),
   personal_notes: z.string().nullable().optional(),
+  date_added: z.string().nullable().optional(),
   date_started: z.string().nullable().optional(),
   date_completed: z.string().nullable().optional(),
 })

@@ -197,17 +197,22 @@ export const useBookStore = create<BookStore>()(
             if (targetShelf) {
               // Map shelf names to book statuses
               const shelfToStatus: Record<string, string> = {
-                'Currently Reading': 'reading', 
+                'Currently Reading': 'reading',
                 'To Be Read': 'tbr',
                 'Completed': 'completed',
                 'Did Not Finish': 'dnf',
                 'Archived': 'archived'
               }
-              
+
               const newStatus = shelfToStatus[targetShelf.name] || state.books[bookIndex].status
               state.books[bookIndex].status = newStatus as any
               state.books[bookIndex].updated_at = new Date().toISOString()
-              
+
+              // Auto-fill date_started when moved to 'reading' status for the first time
+              if (newStatus === 'reading' && !state.books[bookIndex].date_started) {
+                state.books[bookIndex].date_started = new Date().toISOString().split('T')[0]
+              }
+
               // Set completion date if moving to completed
               if (newStatus === 'completed' && !state.books[bookIndex].date_completed) {
                 state.books[bookIndex].date_completed = new Date().toISOString().split('T')[0]

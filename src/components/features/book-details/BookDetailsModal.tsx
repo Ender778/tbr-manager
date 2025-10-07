@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Modal } from '@/components/ui/Compound/Modal'
-import { StarRating } from '@/components/ui/StarRating'
+import { StarRating, DatePicker } from '@/components/ui'
 import { Button } from '@/components/ui/Button'
 import { Heading2, Text, Small } from '@/components/ui/Typography'
 import { Book } from '@/types/book'
@@ -21,13 +21,55 @@ export function BookDetailsModal({ book, isOpen, onClose }: BookDetailsModalProp
 
   const [rating, setRating] = useState<number>(0)
   const [notes, setNotes] = useState<string>('')
+  const [dateAdded, setDateAdded] = useState<Date | null>(null)
+  const [dateStarted, setDateStarted] = useState<Date | null>(null)
+  const [dateCompleted, setDateCompleted] = useState<Date | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+
+  // Helper to parse date string in local timezone (avoid timezone shifts)
+  const parseDateFromStorage = (dateString: string | null): Date | null => {
+    if (!dateString) return null
+    try {
+      // Handle both "YYYY-MM-DD" and "YYYY-MM-DDTHH:mm:ss.sssZ" formats
+      const dateOnly = dateString.split('T')[0]
+      const [year, month, day] = dateOnly.split('-').map(Number)
+
+      // Validate we got valid numbers
+      if (!year || !month || !day) {
+        console.error('Invalid date components:', { year, month, day, dateString })
+        return null
+      }
+
+      const date = new Date(year, month - 1, day)
+      // Validate the date is valid
+      if (isNaN(date.getTime())) {
+        console.error('Invalid date created:', dateString)
+        return null
+      }
+      return date
+    } catch (error) {
+      console.error('Error parsing date:', dateString, error)
+      return null
+    }
+  }
+
+  // Helper to format date in local timezone (avoid timezone shifts)
+  const formatDateForStorage = (date: Date | null): string | null => {
+    if (!date) return null
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
 
   // Reset form when book changes
   useEffect(() => {
     if (book) {
       setRating(book.rating || 0)
       setNotes(book.personal_notes || '')
+      setDateAdded(parseDateFromStorage(book.date_added))
+      setDateStarted(parseDateFromStorage(book.date_started))
+      setDateCompleted(parseDateFromStorage(book.date_completed))
     }
   }, [book])
 
@@ -39,6 +81,9 @@ export function BookDetailsModal({ book, isOpen, onClose }: BookDetailsModalProp
       await updateBook(book.id, {
         rating: rating || null,
         personal_notes: notes.trim() || null,
+        date_added: formatDateForStorage(dateAdded),
+        date_started: formatDateForStorage(dateStarted),
+        date_completed: formatDateForStorage(dateCompleted),
       })
       toast.success('Book updated successfully!')
       onClose()
@@ -51,7 +96,11 @@ export function BookDetailsModal({ book, isOpen, onClose }: BookDetailsModalProp
   }
 
   const hasChanges =
-    rating !== (book.rating || 0) || notes !== (book.personal_notes || '')
+    rating !== (book.rating || 0) ||
+    notes !== (book.personal_notes || '') ||
+    formatDateForStorage(dateAdded) !== book.date_added ||
+    formatDateForStorage(dateStarted) !== book.date_started ||
+    formatDateForStorage(dateCompleted) !== book.date_completed
 
   return (
     <Modal.Root open={isOpen} onOpenChange={onClose}>
@@ -175,35 +224,31 @@ export function BookDetailsModal({ book, isOpen, onClose }: BookDetailsModalProp
             </Small>
           </div>
 
-          {/* Dates */}
-          {(book.date_added || book.date_started || book.date_completed) && (
-            <div className="border-t pt-4 space-y-2">
-              {book.date_added && (
-                <div className="flex justify-between text-sm">
-                  <Small className="text-gray-500">Added</Small>
-                  <Text className="text-sm">
-                    {new Date(book.date_added).toLocaleDateString()}
-                  </Text>
-                </div>
-              )}
-              {book.date_started && (
-                <div className="flex justify-between text-sm">
-                  <Small className="text-gray-500">Started</Small>
-                  <Text className="text-sm">
-                    {new Date(book.date_started).toLocaleDateString()}
-                  </Text>
-                </div>
-              )}
-              {book.date_completed && (
-                <div className="flex justify-between text-sm">
-                  <Small className="text-gray-500">Completed</Small>
-                  <Text className="text-sm">
-                    {new Date(book.date_completed).toLocaleDateString()}
-                  </Text>
-                </div>
-              )}
+          {/* Date Management */}
+          <div className="border-t pt-4 space-y-4">
+            <Heading2 className="!text-lg">Reading Dates</Heading2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <DatePicker
+                date={dateAdded}
+                onDateChange={setDateAdded}
+                label="Date Added"
+                placeholder="Select date"
+              />
+              <DatePicker
+                date={dateStarted}
+                onDateChange={setDateStarted}
+                label="Date Started"
+                placeholder="Select date"
+              />
+              <DatePicker
+                date={dateCompleted}
+                onDateChange={setDateCompleted}
+                label="Date Completed"
+                placeholder="Select date"
+              />
             </div>
-          )}
+          </div>
         </div>
 
         {/* Footer Actions */}

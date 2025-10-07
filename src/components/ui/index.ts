@@ -23,6 +23,9 @@ export type { ButtonVariant, ButtonSize } from './Button'
 
 export { StarRating } from './StarRating'
 
+// Date Components
+export { DatePicker } from './Compound/DatePicker'
+
 // Card Components
 export { 
   Card, 

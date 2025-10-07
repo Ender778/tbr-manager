@@ -29,15 +29,15 @@ export async function POST(request: NextRequest) {
     // Check if book exists and belongs to user, and get target shelf info
     const { data: book, error: bookError } = await supabase
       .from('books')
-      .select('id, status')
+      .select('id, status, date_started')
       .eq('id', bookId)
       .eq('user_id', user.id)
       .single()
 
     if (bookError || !book) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Book not found or access denied' 
+      return NextResponse.json({
+        success: false,
+        error: 'Book not found or access denied'
       }, { status: 404 })
     }
 
@@ -115,11 +115,16 @@ export async function POST(request: NextRequest) {
     // Update book status if it changed
     let updatedBook = null
     if (newStatus !== book.status) {
-      const bookUpdate: any = { 
+      const bookUpdate: any = {
         status: newStatus,
         updated_at: new Date().toISOString()
       }
-      
+
+      // Auto-fill date_started when moved to 'reading' status for the first time
+      if (newStatus === 'reading' && !book.date_started) {
+        bookUpdate.date_started = new Date().toISOString().split('T')[0]
+      }
+
       // Set completion date if moving to completed
       if (newStatus === 'completed') {
         bookUpdate.date_completed = new Date().toISOString().split('T')[0]
@@ -139,9 +144,9 @@ export async function POST(request: NextRequest) {
 
       if (bookUpdateError) {
         console.error('Error updating book status:', bookUpdateError)
-        return NextResponse.json({ 
-          success: false, 
-          error: bookUpdateError.message || 'Failed to update book status' 
+        return NextResponse.json({
+          success: false,
+          error: bookUpdateError.message || 'Failed to update book status'
         }, { status: 500 })
       }
 
