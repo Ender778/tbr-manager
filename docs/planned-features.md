@@ -1,5 +1,28 @@
 # Planned Features: Enhanced Book Management & Views (Phase 2 Continuation)
 
+## ✅ Recently Completed
+
+### Date Management & Tracking System (COMPLETED)
+**Implementation Date:** October 2025
+**Features Delivered:**
+- ✅ Manual editing of date_added, date_started, and date_completed via custom DatePicker component
+- ✅ Auto-fill date_started when book moved to 'Currently Reading' (first time only)
+- ✅ Auto-fill date_completed when book moved to 'Completed'
+- ✅ Guard to prevent overwriting dates on subsequent moves
+- ✅ Timezone-safe date parsing and formatting (prevents day-before bugs)
+- ✅ Custom DatePicker with cork-themed styling using react-day-picker
+- ✅ Responsive 3-column grid layout in BookDetailsModal
+- ✅ Clear date functionality for easy removal
+- ✅ API validation and updates for all three date fields
+
+**Technical Details:**
+- Component: `src/components/ui/Compound/DatePicker.tsx`
+- Dependencies: react-day-picker, date-fns, @radix-ui/react-popover
+- Files Modified: BookDetailsModal, book-store.ts, API routes
+- Commit: `1a64e63` - feat: implement date management and tracking system
+
+---
+
 ## 📚 Feature Set 1: Book Details Modal Enhancements
 
 **Priority:** High Value - These features significantly improve book metadata management and reading progress tracking.
